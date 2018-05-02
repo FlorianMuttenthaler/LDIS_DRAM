@@ -25,9 +25,16 @@ architecture beh of memory_tb is
 	--  Specifies which entity is bound with the component.
 	for memory_0: memory use entity work.memory;	
 
-	constant clk_period : time := 1 ns;
+	constant clk_period : time := 5 ns;
 	
-	signal clk : std_logic := '0';
+	signal clk_200MHz : std_logic := '0';
+
+	signal rst : std_logic; -- active high system reset
+    signal address : std_logic_vector(26 downto 0); -- address space
+    signal data_in : std_logic_vector(7 downto 0); -- data byte input
+	signal r_w	: std_logic; -- Read or Write flag
+	signal mem_ready : std_logic; -- allocated memory ready or busy flag
+    signal data_out : std_logic_vector(7 downto 0); -- data byte output
 
 
 begin
@@ -39,15 +46,21 @@ begin
 		)
 			
 		port map (
-
+			clk_200MHz => clk_200MHz,
+      		rst => rst,
+			address => address,
+			data_in => data_in,
+			r_w	=> r_w,
+			mem_ready => mem_ready,
+			data_out => data_out
 		);
 
 	clk_process : process
 	
 	begin
-		clk <= '0';
+		clk_200MHz <= '0';
 		wait for clk_period/2;
-		clk <= '1';
+		clk_200MHz <= '1';
 		wait for clk_period/2;
 
 	end process clk_process;	
@@ -57,7 +70,7 @@ begin
 
 	begin
 
-		wait for 20 ns;
+		wait for 100 ns;
 		
 
 		assert false report "end of test" severity failure;
