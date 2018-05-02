@@ -23,8 +23,8 @@
 ## Data Mask: 1
 ##################################################################################################
 
-#create_clock -name sys_clk_i -period 4.999 [get_ports sys_clk_i]
-#set_propagated_clock sys_clk_i
+create_clock -name clk_200MHz -period 4.999 [get_ports clk_200MHz]
+set_propagated_clock clk_200MHz
           
 ############## NET - IOSTANDARD ##################
 
