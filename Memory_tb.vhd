@@ -1,8 +1,7 @@
 -------------------------------------------------------------------------------
 --
--- 7-segment display Testbench
--- NOTE: Testbench used to test the segment light diplay with a random number 
--- smaller than display size
+-- Memory Interface Testbench
+-- NOTE: Testbench used to test the memory interface
 --
 -------------------------------------------------------------------------------
 --
@@ -25,7 +24,11 @@ architecture beh of memory_tb is
 	--  Specifies which entity is bound with the component.
 	for memory_0: memory use entity work.memory;	
 
-	constant clk_period : time := 5 ns;
+	constant CLK_PERIOD : time := 5 ns;
+	
+	--Size of FIFO buffers
+	constant FIFO_DEPTH_WRITE : integer := 8;
+	constant FIFO_DEPTH_READ  : integer := 8;
 	
 	signal clk_200MHz : std_logic := '0';
 
@@ -36,13 +39,13 @@ architecture beh of memory_tb is
 	signal mem_ready : std_logic; -- allocated memory ready or busy flag
     signal data_out : std_logic_vector(7 downto 0); -- data byte output
 
-
 begin
 
 	--  Component instantiation.
 	memory_0: memory
 		generic map(
-
+			FIFO_DEPTH_WRITE : integer := 8; -- Default: 8
+			FIFO_DEPTH_READ  : integer := 8; -- Default: 8	
 		)
 			
 		port map (
@@ -54,18 +57,22 @@ begin
 			mem_ready => mem_ready,
 			data_out => data_out
 		);
-
+--
+--------------------------------------------------------------------------------
+--
 	clk_process : process
 	
 	begin
 		clk_200MHz <= '0';
-		wait for clk_period/2;
+		wait for CLK_PERIOD/2;
 		clk_200MHz <= '1';
-		wait for clk_period/2;
+		wait for CLK_PERIOD/2;
 
 	end process clk_process;	
-
-	--  This process does the real job.
+--
+--------------------------------------------------------------------------------
+--  This process does the real job.
+--
 	stimuli : process
 
 	begin
