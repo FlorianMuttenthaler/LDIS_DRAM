@@ -44,8 +44,9 @@ begin
 	--  Component instantiation.
 	memory_0: memory
 		generic map(
-			FIFO_DEPTH_WRITE : integer := 8; -- Default: 8
-			FIFO_DEPTH_READ  : integer := 8; -- Default: 8	
+			ENABLE_16_BIT		: integer := 0; -- Default: 0
+			FIFO_DEPTH_WRITE 	: integer := 8; -- Default: 8
+			FIFO_DEPTH_READ  	: integer := 8; -- Default: 8	
 		)
 			
 		port map (
