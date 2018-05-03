@@ -30,7 +30,7 @@ entity memory is
       	rst                : in    std_logic; -- active high system reset
       	address            : in    std_logic_vector(26 downto 0); -- address space
       	data_in            : in    std_logic_vector(7 downto 0); -- data byte input
-		r_w				   : in 	 std_logic; -- Read or Write flag
+		r_w				   : in    std_logic; -- Read or Write flag
 		mem_ready		   : out   std_logic; -- allocated memory ready or busy flag
       	data_out           : out   std_logic_vector(7 downto 0) -- data byte output
 	);
@@ -43,11 +43,16 @@ architecture beh of memory is
 	--Signals of ram2ddrxadc
 	signal device_temp_i : std_logic_vector(11 downto 0) := (others => '0');
       
-    signal ram_a : std_logic_vector(26 downto 0);
-    signal ram_dq_i, ram_dq_o : std_logic_vector(15 downto 0);
-    signal ram_cen, ram_oen, ram_wen : std_logic;
+    signal ram_a : std_logic_vector(26 downto 0) := (others => '0');
+    signal ram_dq_i: std_logic_vector(15 downto 0) : = (others => '0');
+	signal ram_dq_o : std_logic_vector(15 downto 0);
+    signal ram_cen: std_logic := '0';
+	signal ram_oen: std_logic := '0';
+	signal ram_wen: std_logic := '0';
 	signal ram_ub : std_logic := '0';
 	signal ram_lb : std_logic := '1';
+--lesen cen, oen, lb, ub = 0 und wen =1
+--schreiben cen, wen, lb, ub = 0 und oen = 1
       
     signal ddr2_addr : std_logic_vector(12 downto 0);
     signal ddr2_ba : std_logic_vector(2 downto 0);
@@ -62,13 +67,20 @@ architecture beh of memory is
 	constant DATA_IN_WIDTH	: integer := 1;	--number of units stored on write
 	constant DATA_OUT_WIDTH	: integer := 1;	--number of units loaded on read
 
-	signal dataIn : std_logic_vector ((DATA_IN_WIDTH *DATA_BASE_WIDTH -1) downto 0);
+	signal dataIn_write_data : std_logic_vector ((DATA_IN_WIDTH *DATA_BASE_WIDTH_DATA -1) downto 0);
+	signal dataIn_read_data : std_logic_vector ((DATA_IN_WIDTH *DATA_BASE_WIDTH_DATA -1) downto 0);
+	signal dataIn_write_add : std_logic_vector ((DATA_IN_WIDTH *DATA_BASE_WIDTH_ADDR -1) downto 0);
+	signal dataIn_read_add : std_logic_vector ((DATA_IN_WIDTH *DATA_BASE_WIDTH_ADDR -1) downto 0);
 	signal write_dataIn : std_logic := '0';
 	signal write_dataOut : std_logic := '0';
 	signal read_dataIn : std_logic := '0';
 	signal read_dataOut : std_logic := '0';
-	signal empty, full	: std_logic;
-	signal dataOut : std_logic_vector ((DATA_OUT_WIDTH*DATA_BASE_WIDTH -1) downto 0);
+	signal empty_write_data, empty_write_add, empty_read_data, empty_read_add : std_logic;
+	signal full_write_data, full_write_add, full_read_data, full_read_add : std_logic;
+	signal dataOut_write_data : std_logic_vector ((DATA_IN_WIDTH *DATA_BASE_WIDTH_DATA -1) downto 0);
+	signal dataOut_read_data : std_logic_vector ((DATA_IN_WIDTH *DATA_BASE_WIDTH_DATA -1) downto 0);
+	signal dataOut_write_add : std_logic_vector ((DATA_IN_WIDTH *DATA_BASE_WIDTH_ADDR -1) downto 0);
+	signal dataOut_read_add : std_logic_vector ((DATA_IN_WIDTH *DATA_BASE_WIDTH_ADDR -1) downto 0);
 	
 begin
 	
@@ -118,11 +130,11 @@ begin
 			clk => clk_200MHz,
 			rst => rst,
 			write => write_dataIn,
-			dataIn => dataIn,
+			dataIn => dataIn_write_add,
 			read => read_dataIn,
-			dataOut => dataOut,
-			empty => empty,
-			full => full
+			dataOut => dataOut_write_add,
+			empty => empty_write_add,
+			full => full_write_add
 		);
 		
 	fifo_buffer_addr_read: entity work.fifo_buffer
@@ -137,11 +149,11 @@ begin
 			clk => clk_200MHz,
 			rst => rst,
 			write => write_dataOut,
-			dataIn => dataIn,
+			dataIn => dataIn_read_add,
 			read => read_dataOut,
-			dataOut => dataOut,
-			empty => empty,
-			full => full
+			dataOut => dataOut_read_add,
+			empty => empty_read_add,
+			full => full_read_add
 		);
 		
 	fifo_buffer_data_write: entity work.fifo_buffer
@@ -156,11 +168,11 @@ begin
 			clk => clk_200MHz,
 			rst => rst,
 			write => write_dataIn,
-			dataIn => dataIn,
+			dataIn => dataIn_write_data,
 			read => read_dataIn,
-			dataOut => dataOut,
-			empty => empty,
-			full => full
+			dataOut => dataOut_write_data,
+			empty => empty_write_data,
+			full => full_write_data
 		);
 		
 	fifo_buffer_data_read: entity work.fifo_buffer
@@ -175,22 +187,49 @@ begin
 			clk => clk_200MHz,
 			rst => rst,
 			write => write_dataOut,
-			dataIn => dataIn,
+			dataIn => dataIn_read_data,
 			read => read_dataOut,
-			dataOut => dataOut,
-			empty => empty,
-			full => full
+			dataOut => dataOut_read_data,
+			empty => empty_read_data,
+			full => full_read_data
 		);
 		
 -------------------------------------------------------------------------------
 --
--- Process sync_proc: triggered by clk_200MHz
--- Main sync process
+-- Process sync_proc_fifos: triggered by clk_200MHz, r_w, full_write_data, full_write_add, full_read_add, empty_read_data
+-- Main sync process for fifo management
 --
-	sync_proc: process (clk_200MHz)
+	sync_proc_fifos: process (clk_200MHz, r_w, full_write_data, full_write_add, full_read_add, empty_read_data)
 	begin
-		
-	end process sync_proc;
+		if rising_edge(clk_200MHz) then
+			if r_w = '1' then
+				ram_wen <= '0';
+				ram_oen <= '1';
+				if full_write_data = '0' and full_write_add = '0' then
+					write_dataIn <= '1';
+					dataIn_write_data <= data_in;
+					dataIn_write_add <= address;
+				else
+					write_dataIn <= '0';
+				end if;
+			else
+				ram_wen <= '1';
+				ram_oen <= '0';
+				if full_read_add = '0' then
+					write_dataOut <= '1';
+					dataIn_read_add <= address;
+				else
+					write_dataOut <= '0';
+				end if;
+				if empty_read_data = '0' then
+					read_dataOut <= '1';
+					data_out <= dataOut_read_data;
+				else
+					read_dataOut <= '0';
+				end if;
+			end if;
+		end if;		
+	end process sync_proc_fifos;
 			
 
 	
