@@ -26,7 +26,8 @@ architecture beh of memory_tb is
 
 	constant CLK_PERIOD : time := 5 ns;
 	
-	--Size of FIFO buffers
+	constant ENABLE_16_BIT		: integer := 0;
+	constant INTERNAL_COUNTER_MAX: integer := 3;
 	constant FIFO_DEPTH_WRITE : integer := 8;
 	constant FIFO_DEPTH_READ  : integer := 8;
 	
@@ -44,9 +45,10 @@ begin
 	--  Component instantiation.
 	memory_0: memory
 		generic map(
-			ENABLE_16_BIT		: integer := 0; -- Default: 0
-			FIFO_DEPTH_WRITE 	: integer := 8; -- Default: 8
-			FIFO_DEPTH_READ  	: integer := 8; -- Default: 8	
+			ENABLE_16_BIT => ENABLE_16_BIT,
+			INTERNAL_COUNTER_MAX => INTERNAL_COUNTER_MAX,
+			FIFO_DEPTH_WRITE => FIFO_DEPTH_WRITE,
+			FIFO_DEPTH_READ => FIFO_DEPTH_READ	
 		)
 			
 		port map (
