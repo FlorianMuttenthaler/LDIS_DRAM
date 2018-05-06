@@ -30,8 +30,6 @@ architecture beh of memory_tb is
 	constant FIFO_DEPTH_WRITE : integer := 8;
 	constant FIFO_DEPTH_READ  : integer := 8;
 	
-	constant INTERNAL_COUNTER_MAX: integer := 26; -- for 260ns cycle
-	
 	signal clk_200MHz : std_logic := '0';
 
 	signal rst : std_logic; -- active high system reset
@@ -47,7 +45,6 @@ begin
 	memory_0: memory
 		generic map(
 			ENABLE_16_BIT => ENABLE_16_BIT,
-			INTERNAL_COUNTER_MAX => INTERNAL_COUNTER_MAX,
 			FIFO_DEPTH_WRITE => FIFO_DEPTH_WRITE,
 			FIFO_DEPTH_READ => FIFO_DEPTH_READ	
 		)
