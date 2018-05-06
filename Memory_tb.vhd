@@ -21,28 +21,29 @@ end memory_tb;
 --
 architecture beh of memory_tb is
 
-	--  Specifies which entity is bound with the component.
+	-- Specifies which entity is bound with the component.
 	for memory_0: memory use entity work.memory;	
 
 	constant CLK_PERIOD : time := 5 ns;
 	
 	constant ENABLE_16_BIT		: integer := 0;
-	constant INTERNAL_COUNTER_MAX: integer := 3;
 	constant FIFO_DEPTH_WRITE : integer := 8;
 	constant FIFO_DEPTH_READ  : integer := 8;
+	
+	constant INTERNAL_COUNTER_MAX: integer := 26; -- for 260ns cycle
 	
 	signal clk_200MHz : std_logic := '0';
 
 	signal rst : std_logic; -- active high system reset
-    signal address : std_logic_vector(26 downto 0); -- address space
-    signal data_in : std_logic_vector(7 downto 0); -- data byte input
+   signal address : std_logic_vector(26 downto 0); -- address space
+   signal data_in : std_logic_vector(7 downto 0); -- data byte input
 	signal r_w	: std_logic; -- Read or Write flag
 	signal mem_ready : std_logic; -- allocated memory ready or busy flag
-    signal data_out : std_logic_vector(7 downto 0); -- data byte output
+   signal data_out : std_logic_vector(7 downto 0); -- data byte output
 
 begin
 
-	--  Component instantiation.
+	-- Component instantiation.
 	memory_0: memory
 		generic map(
 			ENABLE_16_BIT => ENABLE_16_BIT,
