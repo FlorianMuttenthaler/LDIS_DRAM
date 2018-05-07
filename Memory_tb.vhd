@@ -12,7 +12,6 @@ use ieee.numeric_std.all;
 
 use work.memory_pkg.all;
 
-
 --  A testbench has no ports.
 entity memory_tb is
 end memory_tb;
@@ -24,39 +23,39 @@ architecture beh of memory_tb is
 	-- Specifies which entity is bound with the component.
 	for memory_0: memory use entity work.memory;	
 
-	constant CLK_PERIOD : time := 5 ns;
+	constant CLK_PERIOD			: time := 5 ns;
 	
-	constant ENABLE_16_BIT		: integer := 0;
-	constant FIFO_DEPTH_WRITE : integer := 8;
-	constant FIFO_DEPTH_READ  : integer := 8;
+	constant ENABLE_16_BIT		: integer := 0; -- 8 bit
+	constant FIFO_DEPTH_WRITE	: integer := 8;
+	constant FIFO_DEPTH_READ  	: integer := 8;
 	
-	signal clk_200MHz : std_logic := '0';
+	signal clk_200MHz 			: std_logic := '0';
 
-	signal rst : std_logic; -- active high system reset
-   signal address : std_logic_vector(26 downto 0); -- address space
-   signal data_in : std_logic_vector(7 downto 0); -- data byte input
-	signal r_w	: std_logic; -- Read or Write flag
-	signal mem_ready : std_logic; -- allocated memory ready or busy flag
-   signal data_out : std_logic_vector(7 downto 0); -- data byte output
+	signal rst 						: std_logic; -- active high system reset
+   signal address 				: std_logic_vector(26 downto 0); -- address space
+   signal data_in 				: std_logic_vector(7 downto 0); -- data byte input
+	signal r_w						: std_logic; -- Read or Write flag
+	signal mem_ready 				: std_logic; -- allocated memory ready or busy flag
+   signal data_out 				: std_logic_vector(7 downto 0); -- data byte output
 
 begin
 
 	-- Component instantiation.
 	memory_0: memory
 		generic map(
-			ENABLE_16_BIT => ENABLE_16_BIT,
-			FIFO_DEPTH_WRITE => FIFO_DEPTH_WRITE,
-			FIFO_DEPTH_READ => FIFO_DEPTH_READ	
+			ENABLE_16_BIT 		=> ENABLE_16_BIT,
+			FIFO_DEPTH_WRITE 	=> FIFO_DEPTH_WRITE,
+			FIFO_DEPTH_READ 	=> FIFO_DEPTH_READ	
 		)
 			
 		port map (
-			clk_200MHz => clk_200MHz,
-      		rst => rst,
-			address => address,
-			data_in => data_in,
-			r_w	=> r_w,
-			mem_ready => mem_ready,
-			data_out => data_out
+			clk_200MHz			=> clk_200MHz,
+      	rst 					=> rst,
+			address 				=> address,
+			data_in 				=> data_in,
+			r_w					=> r_w,
+			mem_ready 			=> mem_ready,
+			data_out 			=> data_out
 		);
 --
 --------------------------------------------------------------------------------
@@ -79,6 +78,12 @@ begin
 	begin
 
 		wait for 100 ns;
+		
+		rst <= '0';
+		r_w <= '0';
+		dataIn <= "00000000";
+		wait for CLK_PERIOD/2;
+		assert mem_ready = '1' report "not empty at startup" severity error;
 		
 
 		assert false report "end of test" severity failure;

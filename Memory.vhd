@@ -143,118 +143,118 @@ begin
 	ram2ddrxadc: entity work.ram2ddrxadc
 		port map (
 			-- Common
-			clk_200MHz_i => clk_200MHz,
-			rst_i => rst,
-			device_temp_i => device_temp_i,
+			clk_200MHz_i		=> clk_200MHz,
+			rst_i 				=> rst,
+			device_temp_i 		=> device_temp_i,
 	
 			-- RAM interface
-			ram_a => ram_a,
-			ram_dq_i => ram_dq_i,
-			ram_dq_o => ram_dq_o,
-			ram_cen => ram_cen,
-			ram_oen => ram_oen,
-			ram_wen => ram_wen,
-			ram_ub => ram_ub,
-			ram_lb => ram_lb,
+			ram_a 				=> ram_a,
+			ram_dq_i 			=> ram_dq_i,
+			ram_dq_o 			=> ram_dq_o,
+			ram_cen 				=> ram_cen,
+			ram_oen 				=> ram_oen,
+			ram_wen 				=> ram_wen,
+			ram_ub 				=> ram_ub,
+			ram_lb 				=> ram_lb,
 	
 			-- DDR2 interface
-			ddr2_addr => ddr2_addr,
-			ddr2_ba => ddr2_ba,
-			ddr2_ras_n => ddr2_ras_n,
-			ddr2_cas_n => ddr2_cas_n,
-			ddr2_we_n => ddr2_we_n,
-			ddr2_ck_p => ddr2_ck_p,
-			ddr2_ck_n => ddr2_ck_n,
-			ddr2_cke => ddr2_cke,
-			ddr2_cs_n => ddr2_cs_n,
-			ddr2_dm => ddr2_dm,
-			ddr2_odt => ddr2_odt,
-			ddr2_dq => ddr2_dq,
-			ddr2_dqs_p => ddr2_dqs_p,
-			ddr2_dqs_n => ddr2_dqs_n
+			ddr2_addr 			=> ddr2_addr,
+			ddr2_ba 				=> ddr2_ba,
+			ddr2_ras_n 			=> ddr2_ras_n,
+			ddr2_cas_n 			=> ddr2_cas_n,
+			ddr2_we_n 			=> ddr2_we_n,
+			ddr2_ck_p 			=> ddr2_ck_p,
+			ddr2_ck_n 			=> ddr2_ck_n,
+			ddr2_cke 			=> ddr2_cke,
+			ddr2_cs_n 			=> ddr2_cs_n,
+			ddr2_dm 				=> ddr2_dm,
+			ddr2_odt 			=> ddr2_odt,
+			ddr2_dq 				=> ddr2_dq,
+			ddr2_dqs_p 			=> ddr2_dqs_p,
+			ddr2_dqs_n 			=> ddr2_dqs_n
 		);
 		
 	-- FIFO for addresses, write operation
 	fifo_buffer_addr_write: entity work.fifo_buffer
 		generic map(
-			DATA_BASE_WIDTH => DATA_BASE_WIDTH_ADDR,
-			DATA_IN_WIDTH => DATA_IN_WIDTH,
-			DATA_OUT_WIDTH => DATA_OUT_WIDTH,
-			FIFO_DEPTH => FIFO_DEPTH_WRITE
+			DATA_BASE_WIDTH	=> DATA_BASE_WIDTH_ADDR,
+			DATA_IN_WIDTH 		=> DATA_IN_WIDTH,
+			DATA_OUT_WIDTH 	=> DATA_OUT_WIDTH,
+			FIFO_DEPTH 			=> FIFO_DEPTH_WRITE
 		)
 			
 		port map(
-			clk => clk_200MHz,
-			rst => rst,
-			write => write_dataIn,
-			--dataIn => dataIn_write_add,
-			dataIn => address,
-			read => read_dataIn,
-			dataOut => dataOut_write_add,
-			empty => empty_write_add,
-			full => full_write_add
+			clk 					=> clk_200MHz,
+			rst 					=> rst,
+			write 				=> write_dataIn,
+			--dataIn 			=> dataIn_write_add,
+			dataIn 				=> address,
+			read 					=> read_dataIn,
+			dataOut 				=> dataOut_write_add,
+			empty 				=> empty_write_add,
+			full 					=> full_write_add
 		);
 	
 	-- FIFO for addresses, read operation
 	fifo_buffer_addr_read: entity work.fifo_buffer
 		generic map(
-			DATA_BASE_WIDTH => DATA_BASE_WIDTH_ADDR,
-			DATA_IN_WIDTH => DATA_IN_WIDTH,
-			DATA_OUT_WIDTH => DATA_OUT_WIDTH,
-			FIFO_DEPTH => FIFO_DEPTH_READ
+			DATA_BASE_WIDTH 	=> DATA_BASE_WIDTH_ADDR,
+			DATA_IN_WIDTH 		=> DATA_IN_WIDTH,
+			DATA_OUT_WIDTH 	=> DATA_OUT_WIDTH,
+			FIFO_DEPTH 			=> FIFO_DEPTH_READ
 		)
 			
 		port map(
-			clk => clk_200MHz,
-			rst => rst,
-			write => write_dataOut_add,
-			--dataIn => dataIn_read_add,
-			dataIn => address,
-			read => read_dataOut_add,
-			dataOut => dataOut_read_add,
-			empty => empty_read_add,
-			full => full_read_add
+			clk 					=> clk_200MHz,
+			rst 					=> rst,
+			write 				=> write_dataOut_add,
+			--dataIn 			=> dataIn_read_add,
+			dataIn 				=> address,
+			read 					=> read_dataOut_add,
+			dataOut 				=> dataOut_read_add,
+			empty 				=> empty_read_add,
+			full 					=> full_read_add
 		);
 		
 	-- FIFO for data, write operation
 	fifo_buffer_data_write: entity work.fifo_buffer
 		generic map(
-			DATA_BASE_WIDTH => DATA_BASE_WIDTH_DATA,
-			DATA_IN_WIDTH => DATA_IN_WIDTH,
-			DATA_OUT_WIDTH => DATA_OUT_WIDTH,
-			FIFO_DEPTH => FIFO_DEPTH_WRITE
+			DATA_BASE_WIDTH 	=> DATA_BASE_WIDTH_DATA,
+			DATA_IN_WIDTH 		=> DATA_IN_WIDTH,
+			DATA_OUT_WIDTH 	=> DATA_OUT_WIDTH,
+			FIFO_DEPTH 			=> FIFO_DEPTH_WRITE
 		)
 			
 		port map(
-			clk => clk_200MHz,
-			rst => rst,
-			write => write_dataIn,
-			--dataIn => dataIn_write_data,
-			dataIn => data_in,
-			read => read_dataIn,
-			dataOut => dataOut_write_data,
-			empty => empty_write_data,
-			full => full_write_data
+			clk 					=> clk_200MHz,
+			rst 					=> rst,
+			write 				=> write_dataIn,
+			--dataIn 			=> dataIn_write_data,
+			dataIn 				=> data_in,
+			read 					=> read_dataIn,
+			dataOut 				=> dataOut_write_data,
+			empty 				=> empty_write_data,
+			full 					=> full_write_data
 		);
 		
 	-- FIFO for data, read operation
 	fifo_buffer_data_read: entity work.fifo_buffer
 		generic map(
-			DATA_BASE_WIDTH => DATA_BASE_WIDTH_DATA,
-			DATA_IN_WIDTH => DATA_IN_WIDTH,
-			DATA_OUT_WIDTH => DATA_OUT_WIDTH,
-			FIFO_DEPTH => FIFO_DEPTH_READ
+			DATA_BASE_WIDTH 	=> DATA_BASE_WIDTH_DATA,
+			DATA_IN_WIDTH 		=> DATA_IN_WIDTH,
+			DATA_OUT_WIDTH		=> DATA_OUT_WIDTH,
+			FIFO_DEPTH 			=> FIFO_DEPTH_READ
 		)
 			
 		port map(
-			clk => clk_200MHz,
-			rst => rst,
-			write => write_dataOut_data,
-			dataIn => dataIn_read_data,
-			read => read_dataOut_data,
-			dataOut => dataOut_read_data,
-			empty => empty_read_data,
-			full => full_read_data
+			clk 					=> clk_200MHz,
+			rst 					=> rst,
+			write 				=> write_dataOut_data,
+			dataIn 				=> dataIn_read_data,
+			read 					=> read_dataOut_data,
+			dataOut 				=> dataOut_read_data,
+			empty 				=> empty_read_data,
+			full 					=> full_read_data
 		);
 
 -------------------------------------------------------------------------------
