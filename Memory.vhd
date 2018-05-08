@@ -29,7 +29,7 @@ entity memory is
 	port (
     	clk_200MHz      				: in  std_logic; -- 200 MHz system clock => 5 ns period time
 		rst             				: in  std_logic; -- active high system reset
-		address 	     					: in  std_logic_vector(26 downto 0); -- address space
+		address 	     				: in  std_logic_vector(26 downto 0); -- address space
 		data_in          				: in  std_logic_vector((8 * (1 + ENABLE_16_BIT) - 1) downto 0); -- data byte input
 		r_w			     				: in  std_logic; -- Read or Write flag: '1' ... write, '0' ... read
 		mem_ready						: out std_logic; -- allocated memory ready or busy flag: '1' ... ready, '0' ... busy
@@ -45,10 +45,10 @@ architecture beh of memory is
 	signal device_temp_i 			: std_logic_vector(11 downto 0) := (others => '0');
     
 	-- RAM interface
-   signal ram_a 						: std_logic_vector(26 downto 0) := (others => '0');
-   signal ram_dq_i					: std_logic_vector(15 downto 0) := (others => '0');
+   	signal ram_a 						: std_logic_vector(26 downto 0) := (others => '0');
+   	signal ram_dq_i					: std_logic_vector(15 downto 0) := (others => '0');
 	signal ram_dq_o					: std_logic_vector(15 downto 0);
-   signal ram_cen						: std_logic := '1';
+   	signal ram_cen						: std_logic := '1';
 	signal ram_oen						: std_logic := '1';
 	signal ram_wen						: std_logic := '1';
 	signal ram_ub 						: std_logic := '0';
@@ -60,7 +60,7 @@ architecture beh of memory is
   
 	-- DDR2 interface
 	signal ddr2_addr 					: std_logic_vector(12 downto 0);
-   signal ddr2_ba 	 				: std_logic_vector(2 downto 0);
+   	signal ddr2_ba 	 				: std_logic_vector(2 downto 0);
 	signal ddr2_ras_n					: std_logic;
 	signal ddr2_cas_n					: std_logic;
 	signal ddr2_we_n					: std_logic;
@@ -120,8 +120,8 @@ architecture beh of memory is
 	signal dataOut_read_add 		: std_logic_vector((DATA_IN_WIDTH * DATA_BASE_WIDTH_ADDR -1) downto 0);
 
 	--Internal Counter
-	constant COUNTER_MAX_WRITE		: integer := 260; -- for 260ns cycle
-	constant COUNTER_MAX_READ		: integer := 210; -- for 210ns cycle
+	constant COUNTER_MAX_WRITE		: integer := 52; -- for 260ns cycle
+	constant COUNTER_MAX_READ		: integer := 80; -- for 350ns cycle
 	signal start_counter				: std_logic := '0';
 	signal counter						: integer := 0;
 	signal cnt_write					: std_logic := '0';
@@ -130,8 +130,10 @@ architecture beh of memory is
 	-- States:
 	type type_state is (
 		STATE_IDLE,
+		STATE_RAM_WRITE_FIFO,
 		STATE_RAM_WRITE,
 		STATE_WRITE_WAIT,
+		STATE_RAM_READ_FIFO,
 		STATE_RAM_READ,
 		STATE_READ_WAIT
 	);
@@ -151,15 +153,15 @@ begin
 			ram_a 				=> ram_a,
 			ram_dq_i 			=> ram_dq_i,
 			ram_dq_o 			=> ram_dq_o,
-			ram_cen 				=> ram_cen,
-			ram_oen 				=> ram_oen,
-			ram_wen 				=> ram_wen,
+			ram_cen 			=> ram_cen,
+			ram_oen 			=> ram_oen,
+			ram_wen 			=> ram_wen,
 			ram_ub 				=> ram_ub,
 			ram_lb 				=> ram_lb,
 	
 			-- DDR2 interface
 			ddr2_addr 			=> ddr2_addr,
-			ddr2_ba 				=> ddr2_ba,
+			ddr2_ba 			=> ddr2_ba,
 			ddr2_ras_n 			=> ddr2_ras_n,
 			ddr2_cas_n 			=> ddr2_cas_n,
 			ddr2_we_n 			=> ddr2_we_n,
@@ -167,9 +169,9 @@ begin
 			ddr2_ck_n 			=> ddr2_ck_n,
 			ddr2_cke 			=> ddr2_cke,
 			ddr2_cs_n 			=> ddr2_cs_n,
-			ddr2_dm 				=> ddr2_dm,
+			ddr2_dm 			=> ddr2_dm,
 			ddr2_odt 			=> ddr2_odt,
-			ddr2_dq 				=> ddr2_dq,
+			ddr2_dq 			=> ddr2_dq,
 			ddr2_dqs_p 			=> ddr2_dqs_p,
 			ddr2_dqs_n 			=> ddr2_dqs_n
 		);
@@ -178,83 +180,80 @@ begin
 	fifo_buffer_addr_write: entity work.fifo_buffer
 		generic map(
 			DATA_BASE_WIDTH	=> DATA_BASE_WIDTH_ADDR,
-			DATA_IN_WIDTH 		=> DATA_IN_WIDTH,
+			DATA_IN_WIDTH 	=> DATA_IN_WIDTH,
 			DATA_OUT_WIDTH 	=> DATA_OUT_WIDTH,
-			FIFO_DEPTH 			=> FIFO_DEPTH_WRITE
+			FIFO_DEPTH 		=> FIFO_DEPTH_WRITE
 		)
 			
 		port map(
-			clk 					=> clk_200MHz,
-			rst 					=> rst,
-			write 				=> write_dataIn,
-			--dataIn 			=> dataIn_write_add,
-			dataIn 				=> address,
-			read 					=> read_dataIn,
-			dataOut 				=> dataOut_write_add,
-			empty 				=> empty_write_add,
-			full 					=> full_write_add
+			clk 			=> clk_200MHz,
+			rst 			=> rst,
+			write 			=> write_dataIn,
+			dataIn 			=> address,
+			read 			=> read_dataIn,
+			dataOut 		=> dataOut_write_add,
+			empty 			=> empty_write_add,
+			full 			=> full_write_add
 		);
 	
 	-- FIFO for addresses, read operation
 	fifo_buffer_addr_read: entity work.fifo_buffer
 		generic map(
-			DATA_BASE_WIDTH 	=> DATA_BASE_WIDTH_ADDR,
-			DATA_IN_WIDTH 		=> DATA_IN_WIDTH,
+			DATA_BASE_WIDTH => DATA_BASE_WIDTH_ADDR,
+			DATA_IN_WIDTH 	=> DATA_IN_WIDTH,
 			DATA_OUT_WIDTH 	=> DATA_OUT_WIDTH,
-			FIFO_DEPTH 			=> FIFO_DEPTH_READ
+			FIFO_DEPTH 		=> FIFO_DEPTH_READ
 		)
 			
 		port map(
-			clk 					=> clk_200MHz,
-			rst 					=> rst,
-			write 				=> write_dataOut_add,
-			--dataIn 			=> dataIn_read_add,
-			dataIn 				=> address,
-			read 					=> read_dataOut_add,
-			dataOut 				=> dataOut_read_add,
-			empty 				=> empty_read_add,
-			full 					=> full_read_add
+			clk 			=> clk_200MHz,
+			rst 			=> rst,
+			write 			=> write_dataOut_add,
+			dataIn 			=> address,
+			read 			=> read_dataOut_add,
+			dataOut 		=> dataOut_read_add,
+			empty 			=> empty_read_add,
+			full 			=> full_read_add
 		);
 		
 	-- FIFO for data, write operation
 	fifo_buffer_data_write: entity work.fifo_buffer
 		generic map(
-			DATA_BASE_WIDTH 	=> DATA_BASE_WIDTH_DATA,
-			DATA_IN_WIDTH 		=> DATA_IN_WIDTH,
+			DATA_BASE_WIDTH => DATA_BASE_WIDTH_DATA,
+			DATA_IN_WIDTH 	=> DATA_IN_WIDTH,
 			DATA_OUT_WIDTH 	=> DATA_OUT_WIDTH,
-			FIFO_DEPTH 			=> FIFO_DEPTH_WRITE
+			FIFO_DEPTH 		=> FIFO_DEPTH_WRITE
 		)
 			
 		port map(
-			clk 					=> clk_200MHz,
-			rst 					=> rst,
-			write 				=> write_dataIn,
-			--dataIn 			=> dataIn_write_data,
-			dataIn 				=> data_in,
-			read 					=> read_dataIn,
-			dataOut 				=> dataOut_write_data,
-			empty 				=> empty_write_data,
-			full 					=> full_write_data
+			clk 			=> clk_200MHz,
+			rst 			=> rst,
+			write 			=> write_dataIn,
+			dataIn 			=> data_in,
+			read 			=> read_dataIn,
+			dataOut 		=> dataOut_write_data,
+			empty 			=> empty_write_data,
+			full 			=> full_write_data
 		);
 		
 	-- FIFO for data, read operation
 	fifo_buffer_data_read: entity work.fifo_buffer
 		generic map(
-			DATA_BASE_WIDTH 	=> DATA_BASE_WIDTH_DATA,
-			DATA_IN_WIDTH 		=> DATA_IN_WIDTH,
-			DATA_OUT_WIDTH		=> DATA_OUT_WIDTH,
-			FIFO_DEPTH 			=> FIFO_DEPTH_READ
+			DATA_BASE_WIDTH => DATA_BASE_WIDTH_DATA,
+			DATA_IN_WIDTH 	=> DATA_IN_WIDTH,
+			DATA_OUT_WIDTH	=> DATA_OUT_WIDTH,
+			FIFO_DEPTH 		=> FIFO_DEPTH_READ
 		)
 			
 		port map(
-			clk 					=> clk_200MHz,
-			rst 					=> rst,
-			write 				=> write_dataOut_data,
-			dataIn 				=> dataIn_read_data,
-			read 					=> read_dataOut_data,
-			dataOut 				=> dataOut_read_data,
-			empty 				=> empty_read_data,
-			full 					=> full_read_data
+			clk 			=> clk_200MHz,
+			rst 			=> rst,
+			write 			=> write_dataOut_data,
+			dataIn 			=> dataIn_read_data,
+			read 			=> read_dataOut_data,
+			dataOut 		=> dataOut_read_data,
+			empty 			=> empty_read_data,
+			full 			=> full_read_data
 		);
 
 -------------------------------------------------------------------------------
@@ -323,10 +322,10 @@ begin
 				
 				if counter = COUNTER_MAX_READ then -- 210ns
 					cnt_read <= '1'; 
-					counter <= counter + 1;
+					counter <= 0;
 				elsif counter = COUNTER_MAX_WRITE then -- 260ns
 					cnt_write <= '1';	
-					counter <= 0;					
+					counter <= counter + 1;					
 				else
 					counter <= counter + 1;
 				end if;
@@ -357,7 +356,7 @@ begin
 -- Main sync process for ram mangement
 --
 	sync_proc_ram: process (state, r_w, empty_write_data, empty_write_add, empty_read_add, full_read_data, 
-							dataOut_write_add, dataOut_write_data, dataOut_read_add, ram_dq_o)
+							dataOut_write_add, dataOut_write_data, dataOut_read_add, ram_dq_o, cnt_write, cnt_read)
 	begin
 	
 		case state is
@@ -372,11 +371,23 @@ begin
 				ram_wen <= '1';
 			
 				if r_w = '1' then
-					state_next <= STATE_RAM_WRITE;
-				else 
-					state_next <= STATE_RAM_READ;
+					state_next <= STATE_RAM_WRITE_FIFO;
+				elsif r_w = '0' then
+					state_next <= STATE_RAM_READ_FIFO;
+				else
+				    null;
 				end if;
+				
+			when STATE_RAM_WRITE_FIFO =>
 			
+			    if empty_write_data = '0' and empty_write_add = '0' then
+                    read_dataIn <= '1'; -- reads address and data from FIFO
+                    state_next <= STATE_RAM_WRITE; 
+                else
+                    read_dataIn <= '0'; -- disable read for FIFO
+                    state_next <= STATE_IDLE; 
+                end if;
+                
 			when STATE_RAM_WRITE =>
 			
 				-- set control signals
@@ -384,19 +395,14 @@ begin
 				ram_oen <= '1';
 				ram_wen <= '0';
 				
-				if empty_write_data = '0' and empty_write_add = '0' then
-					read_dataIn <= '1'; -- reads address and data from FIFO
-					ram_a <= dataOut_write_add;
+				ram_a <= dataOut_write_add;
 					
-					if ENABLE_16_BIT = 1 then
-						ram_dq_i <= dataOut_write_data; -- 16 bit
-					else
-						ram_dq_i <= std_logic_vector(resize(unsigned(dataOut_write_data), ram_dq_i'length)); -- 8 bit
-					end if;
-				else
-					read_dataIn <= '0'; -- disable read for FIFO
-				end if;
-				
+                if ENABLE_16_BIT = 1 then
+                    ram_dq_i <= dataOut_write_data; -- 16 bit
+                else
+                    ram_dq_i <= dataOut_write_data & "00000000";--std_logic_vector(resize(unsigned(dataOut_write_data), ram_dq_i'length)); -- 8 bit
+                end if;
+							
 				state_next <= STATE_WRITE_WAIT;
 				
 				-- start counter
@@ -407,6 +413,18 @@ begin
 					state_next <= STATE_IDLE;
 				end if;
 				
+			when STATE_RAM_READ_FIFO =>
+			
+			if (empty_read_add = '0') and (full_read_data = '0') then
+                read_dataOut_add <= '1'; -- reads address from FIFO
+                write_dataOut_data <= '1'; -- writes data to FIFO
+                 state_next <= STATE_RAM_READ;
+            else
+                read_dataOut_add <= '0'; -- disable read for FIFO
+                write_dataOut_data <= '0'; -- disable write for FIFO
+                 state_next <= STATE_IDLE;
+            end if;
+                       
 			when STATE_RAM_READ =>
 			
 				-- set control signals
@@ -414,23 +432,13 @@ begin
 				ram_oen <= '0';
 				ram_wen <= '1';
 				
-				if empty_read_add = '0' then
-					read_dataOut_add <= '1'; -- reads address from FIFO
-					ram_a <= dataOut_read_add;
-				else
-					read_dataOut_add <= '0'; -- disable read for FIFO
-				end if;
-				if full_read_data = '0' then
-					write_dataOut_data <= '1'; -- writes data to FIFO
+				ram_a <= dataOut_read_add; -- reads address from FIFO
 					
-					if ENABLE_16_BIT = 1 then
-						dataIn_read_data <= ram_dq_o; -- 16 bit
-					else
-						dataIn_read_data <= std_logic_vector(resize(unsigned(ram_dq_o), dataIn_read_data'length)); -- 8 bit
-					end if;
-				else
-					write_dataOut_data <= '0'; -- disable write for FIFO
-				end if;
+--                if ENABLE_16_BIT = 1 then
+--                    dataIn_read_data <= ram_dq_o; -- 16 bit
+--                else
+--                    dataIn_read_data <= std_logic_vector(resize(unsigned(ram_dq_o), dataIn_read_data'length)); -- 8 bit
+--                end if;
 				
 				state_next <= STATE_READ_WAIT;
 				
@@ -439,6 +447,11 @@ begin
 			
 			when STATE_READ_WAIT =>
 				if cnt_read = '1' then -- wait for 210ns
+				    if ENABLE_16_BIT = 1 then
+                        dataIn_read_data <= ram_dq_o; -- 16 bit
+                    else
+                        dataIn_read_data <= ram_dq_o(15 downto 8); -- std_logic_vector(resize(unsigned(ram_dq_o), dataIn_read_data'length)); -- 8 bit
+                    end if;
 					state_next <= STATE_IDLE;
 				end if;
 				

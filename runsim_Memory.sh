@@ -7,11 +7,18 @@ rm -f *.o *.cf *.vcd
 
 # Simulate design
 
+# compile unsisim
+#do "Ram2Ddr_RefComp/Source/Ram2DdrXadc_RefComp/ipcore_dir/ddr/example_design/sim/sim.do"
+
 # Syntax check
-ghdl -s Memory.vhdl Memory_pkg.vhdl Memory_tb.vhdl
+ghdl -s fifo.vhd fifo_pkg.vhd
+ghdl -s Ram2Ddr_RefComp/Source/Ram2DdrXadc_RefComp/ram2ddrxadc.vhd Ram2Ddr_RefComp/Source/Ram2DdrXadc_RefComp/ram2ddrxadc_pkg.vhd
+ghdl -s Memory.vhd Memory_pkg.vhd Memory_tb.vhd
 
 # Compile the design
-ghdl -a Memory.vhdl Memory_pkg.vhdl Memory_tb.vhdl
+ghdl -a fifo.vhd fifo_pkg.vhd
+ghdl -a Ram2Ddr_RefComp/Source/Ram2DdrXadc_RefComp/ram2ddrxadc.vhd Ram2Ddr_RefComp/Source/Ram2DdrXadc_RefComp/ram2ddrxadc_pkg.vhd
+ghdl -a Memory.vhd Memory_pkg.vhd Memory_tb.vhd
 
 # Create executable
 ghdl -e memory_tb

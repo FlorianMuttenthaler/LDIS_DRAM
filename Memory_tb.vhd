@@ -31,12 +31,12 @@ architecture beh of memory_tb is
 	
 	signal clk_200MHz 			: std_logic := '0';
 
-	signal rst 						: std_logic; -- active high system reset
-   signal address 				: std_logic_vector(26 downto 0); -- address space
-   signal data_in 				: std_logic_vector(7 downto 0); -- data byte input
-	signal r_w						: std_logic; -- Read or Write flag
-	signal mem_ready 				: std_logic; -- allocated memory ready or busy flag
-   signal data_out 				: std_logic_vector(7 downto 0); -- data byte output
+	signal rst 					: std_logic; -- active high system reset
+    signal address 				: std_logic_vector(26 downto 0); -- address space
+    signal data_in 				: std_logic_vector((8 * (1 + ENABLE_16_BIT)) - 1 downto 0); -- data byte input
+	signal r_w					: std_logic; -- Read or Write flag
+	signal mem_ready 			: std_logic; -- allocated memory ready or busy flag
+    signal data_out 			: std_logic_vector((8 * (1 + ENABLE_16_BIT)) - 1 downto 0); -- data byte output
 
 begin
 
@@ -50,9 +50,9 @@ begin
 			
 		port map (
 			clk_200MHz			=> clk_200MHz,
-      	rst 					=> rst,
-			address 				=> address,
-			data_in 				=> data_in,
+      		rst 				=> rst,
+			address 			=> address,
+			data_in 			=> data_in,
 			r_w					=> r_w,
 			mem_ready 			=> mem_ready,
 			data_out 			=> data_out
@@ -80,10 +80,17 @@ begin
 		wait for 100 ns;
 		
 		rst <= '0';
+		r_w <= '1';
+		address <= "000000000000000000000000001";
+		--data_in <= "0000000100000001";
+		data_in <= "00000001";
+		wait for 400 ns;
+		
 		r_w <= '0';
-		dataIn <= "00000000";
-		wait for CLK_PERIOD/2;
-		assert mem_ready = '1' report "not empty at startup" severity error;
+		address <= "000000000000000000000000001";
+		wait for 800 ns;
+		assert data_out = "00000001" report "Valid data output" severity error;
+		
 		
 
 		assert false report "end of test" severity failure;
