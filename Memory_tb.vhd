@@ -25,7 +25,7 @@ architecture beh of memory_tb is
 
 	constant CLK_PERIOD			: time := 5 ns;
 	
-	constant ENABLE_16_BIT		: integer := 0; -- 8 bit
+	constant ENABLE_16_BIT		: integer := 1; -- 8 bit
 	constant FIFO_DEPTH_WRITE	: integer := 8;
 	constant FIFO_DEPTH_READ  	: integer := 8;
 	
@@ -83,13 +83,13 @@ begin
 		r_w <= '1';
 		address <= "000000000000000000000000001";
 		--data_in <= "0000000100000001";
-		data_in <= "00000001";
+		data_in <= "0000000100000001";
 		wait for 400 ns;
 		
 		r_w <= '0';
 		address <= "000000000000000000000000001";
 		wait for 800 ns;
-		assert data_out = "00000001" report "Valid data output" severity error;
+		assert data_out = "0000000100000001" report "Valid data output" severity error;
 		
 		
 

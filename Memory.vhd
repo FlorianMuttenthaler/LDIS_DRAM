@@ -80,6 +80,7 @@ architecture beh of memory is
 	signal data_cpy					: std_logic_vector((8 * (1 + ENABLE_16_BIT) - 1) downto 0);
 		
 	-- FIFOs
+	-- the instanziated FIFOs are based on the designed entity of robin-arbaud
 	constant DATA_BASE_WIDTH_DATA	: integer := 8 * (1 + ENABLE_16_BIT); -- storage unit length
 	constant DATA_BASE_WIDTH_ADDR : integer := 27; -- storage unit length
 	constant DATA_IN_WIDTH			: integer := 1;  -- number of units stored on write
@@ -259,7 +260,7 @@ begin
 -------------------------------------------------------------------------------
 -- Selection related to the size of the data bytes for handling the ram2ddrxadc module
 --
-	ram_ub <= '1' when ENABLE_16_BIT = 1 else '0';
+	ram_lb <= '0' when ENABLE_16_BIT = 1 else '1';
 		
 -------------------------------------------------------------------------------
 --
