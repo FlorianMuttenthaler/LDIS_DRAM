@@ -28,6 +28,8 @@ set_propagated_clock clk_200MHz
           
 ############## NET - IOSTANDARD ##################
 
+set_property -dict { PACKAGE_PIN H17   IOSTANDARD LVCMOS33 } [get_ports { led }]; #IO_L18P_T2_A24_15 Sch=led[0]
+set_property -dict { PACKAGE_PIN N17   IOSTANDARD LVCMOS33 } [get_ports { rst }]; #IO_L9P_T1_DQS_14 Sch=btnc
 
 # PadFunction: IO_L23P_T3_34 
 set_property SLEW FAST [get_ports {ddr2_dq[0]}]
