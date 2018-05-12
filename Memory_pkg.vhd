@@ -32,7 +32,22 @@ package memory_pkg is
 		data_in          			: in  std_logic_vector((8 * (1 + ENABLE_16_BIT) - 1) downto 0); -- data byte input
 		r_w			     			: in  std_logic; -- Read or Write flag: '1' ... write, '0' ... read
 		mem_ready					: out std_logic; -- allocated memory ready or busy flag: '1' ... ready, '0' ... busy
-		data_out         			: out std_logic_vector((8 * (1 + ENABLE_16_BIT) - 1) downto 0) -- data byte output
+		data_out         			: out std_logic_vector((8 * (1 + ENABLE_16_BIT) - 1) downto 0); -- data byte output
+		-- DDR2 interface
+		ddr2_addr            : out   std_logic_vector(12 downto 0);
+		ddr2_ba              : out   std_logic_vector(2 downto 0);
+		ddr2_ras_n           : out   std_logic;
+		ddr2_cas_n           : out   std_logic;
+		ddr2_we_n            : out   std_logic;
+		ddr2_ck_p            : out   std_logic_vector(0 downto 0);
+		ddr2_ck_n            : out   std_logic_vector(0 downto 0);
+		ddr2_cke             : out   std_logic_vector(0 downto 0);
+		ddr2_cs_n            : out   std_logic_vector(0 downto 0);
+		ddr2_dm              : out   std_logic_vector(1 downto 0);
+		ddr2_odt             : out   std_logic_vector(0 downto 0);
+		ddr2_dq              : inout std_logic_vector(15 downto 0);
+		ddr2_dqs_p           : inout std_logic_vector(1 downto 0);
+		ddr2_dqs_n           : inout std_logic_vector(1 downto 0)
 	);
 	
 	end component memory;

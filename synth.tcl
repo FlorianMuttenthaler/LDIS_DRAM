@@ -8,17 +8,7 @@ create_project -part xc7a100t -force vivado/RNG
 #
 # -----------------------------------------------------------------------------
 #
-
-#read_vhdl TRNG_pkg.vhdl
-#read_vhdl TRNG.vhdl
-#read_vhdl SlowClock_pkg.vhdl
-#read_vhdl SlowClock.vhdl
-#read_vhdl 7seg_pkg.vhdl
-#read_vhdl 7seg.vhdl
-#read_vhdl uart/uart_tx/uart_tx_pkg.vhd
-#read_vhdl uart/uart_tx/uart_tx.vhd
-#read_vhdl uart/uart_rx/uart_rx_pkg.vhd
-#read_vhdl uart/uart_rx/uart_rx.vhd
+add_file Ram2Ddr_RefComp/Source/Ram2DdrXadc_RefComp/ipcore_dir/ddr.xco
 read_vhdl Ram2Ddr_RefComp/Source/Ram2DdrXadc_RefComp/ram2ddrxadc_pkg.vhd
 read_vhdl Ram2Ddr_RefComp/Source/Ram2DdrXadc_RefComp/ram2ddrxadc.vhd
 read_vhdl fifo_pkg.vhd
@@ -26,7 +16,7 @@ read_vhdl fifo.vhd
 
 read_vhdl Memory.vhd
 
-read_xdc  Memory.xdc
+#read_xdc  Memory.xdc
 #
 # -----------------------------------------------------------------------------
 #
