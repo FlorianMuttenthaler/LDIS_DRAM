@@ -24,7 +24,7 @@ entity top is
 		btn_read                        : in std_logic;
 		btn_write                       : in std_logic;
 		data_in							: in std_logic_vector(7 downto 0);
-		data_out						: out std_logic_vector(7 downto 0);
+		led_out							: out std_logic_vector(7 downto 0);
 		-- DDR2 interface
 		ddr2_addr            : out   std_logic_vector(12 downto 0);
 		ddr2_ba              : out   std_logic_vector(2 downto 0);
@@ -80,7 +80,7 @@ begin
 			data_in 		=> data_in,
 			r_w 			=> r_w,
 			mem_ready 		=> mem_ready,
-			data_out 		=> data_out,
+			data_out 		=> led_out,
 			-- DDR2 interface
             ddr2_addr       => ddr2_addr,
             ddr2_ba         => ddr2_ba,
@@ -149,6 +149,7 @@ begin
 				state_next <= STATE_IDLE; 
 			when others =>
 				state_next <= STATE_IDLE; 
+		end case;
 	end process main_proc;
 		
 end beh;
