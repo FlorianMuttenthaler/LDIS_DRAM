@@ -96,25 +96,25 @@ begin
 
 	begin
         
-        rst <= '0';
-		wait for 100 ns;
+ --       rst <= '0';
+--		wait for 100 ns;
 		
 		btn_write <= '1';
 		btn_read <= '0';
 		data_in <= "00001111";
-        wait for 1000 ns;
+        wait for 10000 ns;
 		btn_write <= '0';
 		btn_read <= '1';
-		wait for 1000 ns;
+		wait for 10000 ns;
 		assert led_out = "00001111" report "Valid data output" severity error;
 
 		btn_write <= '1';
 		btn_read <= '0';
 		data_in <= "11111111";
-        wait for 1000 ns;
+        wait for 10000 ns;
 		btn_write <= '0';
 		btn_read <= '1';
-		wait for 1000 ns;
+		wait for 10000 ns;
 		assert led_out = "11111111" report "Valid data output" severity error;
         
 		assert false report "end of test" severity failure;

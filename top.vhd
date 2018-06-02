@@ -140,6 +140,8 @@ begin
 					state_next <=  STATE_WRITE;
 				elsif btn_read_en = '1' then
 					state_next <=  STATE_READ;
+				else
+				    null; -- for init purpose only
 				end if;
 			when STATE_WRITE =>
 				r_w <= '1';
