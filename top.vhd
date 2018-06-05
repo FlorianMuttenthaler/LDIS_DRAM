@@ -120,13 +120,15 @@ begin
 			pls_o   => btn_read_en
 		);
 			
-	sync_proc: process (clk_200MHz, rst)
+	sync_proc: process (clk_200MHz, rst, state_next)
 	begin
-		if rst = '1' then
-			state <= STATE_IDLE;
-		else
-			state <= state_next;
-		end if;
+	   if rising_edge(clk_200MHz) then
+	       if rst = '1' then
+               state <= STATE_IDLE;
+           else
+               state <= state_next;
+           end if;
+	   end if;
 	end process sync_proc;
 			
 	main_proc: process (state, btn_write_en, btn_read_en)
