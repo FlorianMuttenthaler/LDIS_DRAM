@@ -124,7 +124,7 @@ begin
 	begin
 	   if rst = '1' then
 			state <= STATE_IDLE;
-		elsif rising_edge(clk_200MHz)
+		elsif rising_edge(clk_200MHz) then
 			state <= state_next;
 	   end if;
 	end process sync_proc;
