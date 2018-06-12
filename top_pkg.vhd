@@ -35,7 +35,10 @@ package top_pkg is
 			ddr2_odt             : out   std_logic_vector(0 downto 0);
 			ddr2_dq              : inout std_logic_vector(15 downto 0);
 			ddr2_dqs_p           : inout std_logic_vector(1 downto 0);
-			ddr2_dqs_n           : inout std_logic_vector(1 downto 0)
+			ddr2_dqs_n           : inout std_logic_vector(1 downto 0);
+			
+			led_w						: out std_logic;
+			led_r						: out std_logic
 		);
 	end component top;
 	

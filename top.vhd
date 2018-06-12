@@ -39,7 +39,10 @@ entity top is
 		ddr2_odt             : out   std_logic_vector(0 downto 0);
 		ddr2_dq              : inout std_logic_vector(15 downto 0);
 		ddr2_dqs_p           : inout std_logic_vector(1 downto 0);
-		ddr2_dqs_n           : inout std_logic_vector(1 downto 0)
+		ddr2_dqs_n           : inout std_logic_vector(1 downto 0);
+		
+		led_w						: out std_logic;
+		led_r						: out std_logic
 	);
 
 end top;
@@ -47,6 +50,9 @@ end top;
 --------------------------------------------------------------------------------
 --
 architecture beh of top is
+
+	constant NR_OF_CLKS : integer := 1;
+	
 	signal address: std_logic_vector(26 downto 0) := "000000000000000000000000001";
 	signal mem_ready: std_logic;
 	signal data_out: std_logic_vector(15 downto 0);
@@ -67,58 +73,61 @@ architecture beh of top is
 	
 begin
 	memory: entity work.memory
-		generic map(
-			ENABLE_16_BIT		=> 0,
-			FIFO_DEPTH_WRITE 	=> 8,
-			FIFO_DEPTH_READ 	=> 8
-		)
-			
-		port map(
-			clk_200MHz 		=> clk_200MHz,
-			rst 			=> rst,
-			address 		=> address,
-			data_in 		=> data_in,
-			r_w 			=> r_w,
-			mem_ready 		=> mem_ready,
-			data_out 		=> led_out,
-			-- DDR2 interface
-            ddr2_addr       => ddr2_addr,
-            ddr2_ba         => ddr2_ba,
-            ddr2_ras_n      => ddr2_ras_n,
-            ddr2_cas_n      => ddr2_cas_n,
-            ddr2_we_n       => ddr2_we_n,
-            ddr2_ck_p       => ddr2_ck_p,
-            ddr2_ck_n       => ddr2_ck_n,
-            ddr2_cke        => ddr2_cke,
-            ddr2_cs_n       => ddr2_cs_n,
-            ddr2_dm         => ddr2_dm,
-            ddr2_odt        => ddr2_odt,
-            ddr2_dq         => ddr2_dq,
-            ddr2_dqs_p      => ddr2_dqs_p,
-            ddr2_dqs_n      => ddr2_dqs_n
-		);
+	generic map(
+		ENABLE_16_BIT		=> 0,
+		FIFO_DEPTH_WRITE 	=> 8,
+		FIFO_DEPTH_READ 	=> 8
+	)
 		
-		Dbncr_w : entity work.Dbncr
-		generic map(
-			NR_OF_CLKS => 1000
-		)
+	port map(
+		clk_200MHz 		=> clk_200MHz,
+		rst 			=> rst,
+		address 		=> address,
+		data_in 		=> data_in,
+		r_w 			=> r_w,
+		mem_ready 		=> mem_ready,
+		data_out 		=> led_out,
+		-- DDR2 interface
+			ddr2_addr       => ddr2_addr,
+			ddr2_ba         => ddr2_ba,
+			ddr2_ras_n      => ddr2_ras_n,
+			ddr2_cas_n      => ddr2_cas_n,
+			ddr2_we_n       => ddr2_we_n,
+			ddr2_ck_p       => ddr2_ck_p,
+			ddr2_ck_n       => ddr2_ck_n,
+			ddr2_cke        => ddr2_cke,
+			ddr2_cs_n       => ddr2_cs_n,
+			ddr2_dm         => ddr2_dm,
+			ddr2_odt        => ddr2_odt,
+			ddr2_dq         => ddr2_dq,
+			ddr2_dqs_p      => ddr2_dqs_p,
+			ddr2_dqs_n      => ddr2_dqs_n
+	);
+		
+	Dbncr_w : entity work.Dbncr
+	generic map(
+		NR_OF_CLKS => NR_OF_CLKS
+	)
 
-		port map(
-			clk_i   => clk_200MHz,
-			sig_i   => btn_write,
-			pls_o   => btn_write_en
-		);
+	port map(
+		clk_i   => clk_200MHz,
+		sig_i   => btn_write,
+		pls_o   => btn_write_en
+	);
 
-		Dbncr_r : entity work.Dbncr
-		generic map(
-			NR_OF_CLKS => 1000
-		)
+	Dbncr_r : entity work.Dbncr
+	generic map(
+		NR_OF_CLKS => NR_OF_CLKS
+	)
 
-		port map(
-			clk_i   => clk_200MHz,
-			sig_i   => btn_read,
-			pls_o   => btn_read_en
-		);
+	port map(
+		clk_i   => clk_200MHz,
+		sig_i   => btn_read,
+		pls_o   => btn_read_en
+	);
+	
+	led_w <= btn_write_en;	
+	led_r <= btn_read_en;	
 			
 	sync_proc: process (clk_200MHz, rst, state_next)
 	begin

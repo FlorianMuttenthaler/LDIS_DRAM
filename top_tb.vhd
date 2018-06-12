@@ -48,6 +48,9 @@ architecture beh of top_tb is
 	signal ddr2_dq              : std_logic_vector(15 downto 0);
 	signal ddr2_dqs_p           : std_logic_vector(1 downto 0);
 	signal ddr2_dqs_n           : std_logic_vector(1 downto 0);
+	
+	signal led_w					 : std_logic;
+	signal led_r					 : std_logic;
 
 begin
 
@@ -73,7 +76,9 @@ begin
 			ddr2_odt => ddr2_odt,
 			ddr2_dq => ddr2_dq,
 			ddr2_dqs_p => ddr2_dqs_p,
-			ddr2_dqs_n => ddr2_dqs_n
+			ddr2_dqs_n => ddr2_dqs_n,
+			led_w => led_w,
+			led_r => led_r
 		);
 		
 --
@@ -96,8 +101,8 @@ begin
 
 	begin
         
- --       rst <= '0';
---		wait for 100 ns;
+		rst <= '0';
+		wait for 100 ns;
 		
 		btn_write <= '1';
 		btn_read <= '0';
