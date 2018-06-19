@@ -42,7 +42,12 @@ entity top is
 		ddr2_dqs_n           : inout std_logic_vector(1 downto 0);
 		
 		led_w						: out std_logic;
-		led_r						: out std_logic
+		led_r						: out std_logic;
+		
+        -- Debug Ports:
+        dbg_writecounter        : out  integer;
+        dbg_readcounter         : out  integer;
+        dbg_state               : out  integer
 	);
 
 end top;
@@ -101,7 +106,12 @@ begin
 			ddr2_odt        => ddr2_odt,
 			ddr2_dq         => ddr2_dq,
 			ddr2_dqs_p      => ddr2_dqs_p,
-			ddr2_dqs_n      => ddr2_dqs_n
+			ddr2_dqs_n      => ddr2_dqs_n,
+			
+            -- Debug Ports:
+            dbg_writecounter => dbg_writecounter,
+            dbg_readcounter => dbg_readcounter,
+            dbg_state => dbg_state
 	);
 		
 	Dbncr_w : entity work.Dbncr

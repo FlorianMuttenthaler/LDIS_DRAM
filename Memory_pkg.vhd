@@ -47,7 +47,12 @@ package memory_pkg is
 		ddr2_odt             : out   std_logic_vector(0 downto 0);
 		ddr2_dq              : inout std_logic_vector(15 downto 0);
 		ddr2_dqs_p           : inout std_logic_vector(1 downto 0);
-		ddr2_dqs_n           : inout std_logic_vector(1 downto 0)
+		ddr2_dqs_n           : inout std_logic_vector(1 downto 0);
+		
+        -- Debug Ports:
+        dbg_writecounter        : out  integer;
+        dbg_readcounter         : out  integer;
+        dbg_state               : out  integer
 	);
 	
 	end component memory;

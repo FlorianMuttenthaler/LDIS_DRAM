@@ -49,7 +49,12 @@ entity memory is
         ddr2_odt             : out   std_logic_vector(0 downto 0);
         ddr2_dq              : inout std_logic_vector(15 downto 0);
         ddr2_dqs_p           : inout std_logic_vector(1 downto 0);
-        ddr2_dqs_n           : inout std_logic_vector(1 downto 0)
+        ddr2_dqs_n           : inout std_logic_vector(1 downto 0);
+        
+        -- Debug Ports:
+        dbg_writecounter    : out  integer;
+        dbg_readcounter     : out  integer;
+        dbg_state           : out  integer
 );
 
 end memory;
@@ -156,8 +161,14 @@ architecture beh of memory is
 	--Internal Counter
 	constant COUNTER_MAX_WRITE			: integer := 54; -- for 260ns cycle
 	constant COUNTER_MAX_READ			: integer := 44; -- for 350ns cycle
-	signal start_counter				: std_logic := '0';
-    signal start_counter_next			: std_logic := '0';
+--	signal start_counter				: std_logic := '0';
+--    signal start_counter_next			: std_logic := '0';
+
+    signal start_counter_write				: std_logic := '0';
+    signal start_counter_write_next			: std_logic := '0';
+    signal start_counter_read				: std_logic := '0';
+    signal start_counter_read_next            : std_logic := '0';
+
 --	signal counter						: integer := 0;
     signal counter_write				: integer := 0;
 	signal counter_read					: integer := 0;
@@ -166,16 +177,17 @@ architecture beh of memory is
 	
 	-- States:
 	type type_state is (
-		STATE_IDLE,
-		STATE_RAM_WRITE_FIFO,
-		STATE_RAM_WRITE,
-		STATE_WRITE_WAIT,
-		STATE_RAM_READ_FIFO,
-		STATE_RAM_READ,
-		STATE_READ_WAIT
+		STATE_IDLE,               --0
+		STATE_RAM_WRITE_FIFO,     --1
+		STATE_RAM_WRITE,          --1
+		STATE_WRITE_WAIT,         --1
+		STATE_RAM_READ_FIFO,      --4
+		STATE_RAM_READ,           --4
+		STATE_READ_WAIT           --4
 	);
 
 	signal state, state_next 			: type_state := STATE_IDLE;
+	
 	
 begin
 	
@@ -346,17 +358,17 @@ begin
 -- Process counter_proc: triggered by clk_200MHz, counter, rst, start_counter
 -- implemtation for counter
 --
-	counter_proc: process (clk_200MHz, counter_write, counter_read, rst, start_counter)
+	counter_proc: process (clk_200MHz, counter_write, counter_read, rst, start_counter_write, start_counter_read)
 	begin
 		if rst = '1' then -- Reset Counter and signals
 			counter_write <= 0;
 			counter_read <= 0;
 			cnt_write <= '0';	
 			cnt_read <= '0'; 
-		elsif start_counter = '1' then		
+		else		
 			if rising_edge(clk_200MHz) then
-				if r_w = '1' then
-				    if counter_write = 0 then
+				if (start_counter_write = '1') then
+				    if counter_write < COUNTER_MAX_WRITE then
                         -- Clear signals
                         cnt_write <= '0'; 
                     end if;
@@ -365,10 +377,13 @@ begin
                         counter_write <= 0;
                     else
                         counter_write <= counter_write + 1;
+                        dbg_writecounter <= counter_write+1;
                     end if;
                     counter_read <= 0;
-				elsif r_w = '0' then
-				    if counter_read = 0 then
+                end if;
+                
+				if (start_counter_read = '1') then
+				    if counter_read < COUNTER_MAX_READ then
                         -- Clear signals
                         cnt_read <= '0'; 
                     end if;
@@ -377,6 +392,7 @@ begin
                         counter_read <= 0;
                     else
                         counter_read <= counter_read + 1;
+                        dbg_readcounter <= counter_read+1;
                     end if;
                     counter_write <= 0;
 				end if;
@@ -411,7 +427,10 @@ begin
 			write_dataOut_data		<= write_dataOut_data_next;
 			read_dataIn 			<= read_dataIn_next;
 			read_dataOut_add 		<= read_dataOut_add_next;
-			start_counter 			<= start_counter_next;
+--			start_counter 			<= start_counter_next;
+			
+			start_counter_write 			<= start_counter_write_next;
+			start_counter_read 			<= start_counter_read_next;
 			
 			-- sync empty flags
 			empty_write_data 		<= empty_write_data_next;
@@ -437,7 +456,7 @@ begin
 							empty_read_add, full_read_data, dataOut_write_add, dataOut_write_data, 
 							dataOut_read_add, ram_dq_o, cnt_write, cnt_read, ram_cen, 
 							ram_oen, ram_wen, ram_a, ram_dq_i, dataIn_read_data, 
-							write_dataOut_data, read_dataIn, read_dataOut_add, start_counter)
+							write_dataOut_data, read_dataIn, read_dataOut_add, start_counter_write, start_counter_read)
 	begin
 	
 		-- prevent latches for state machine
@@ -451,12 +470,19 @@ begin
 		write_dataOut_data_next		<= write_dataOut_data;
 		read_dataIn_next 			<= read_dataIn;
 		read_dataOut_add_next		<= read_dataOut_add;
-		start_counter_next 			<= start_counter;
+--		start_counter_next 			<= start_counter;
+		
+		start_counter_write_next 			<= start_counter_write;
+        start_counter_read_next 			<= start_counter_read;
 		
 		case state is
 		
 			when STATE_IDLE =>
-				start_counter_next <= '0'; -- stop counter
+			    -- DEBUG:
+			    --dbg_state <= 0;
+			    
+				start_counter_write_next <= '0'; -- stop counter
+				start_counter_read_next <= '0'; -- stop counter
 				
 				write_dataOut_data_next <= '0'; -- disable write for FIFO
 			
@@ -474,6 +500,8 @@ begin
 				end if;
 				
 			when STATE_RAM_WRITE_FIFO =>
+			    -- DEBUG:
+                dbg_state <= 1;			
 			
 				-- FIFOs not empty?
 			    if empty_write_data = '0' and empty_write_add = '0' then
@@ -485,7 +513,9 @@ begin
                 end if;
                 
 			when STATE_RAM_WRITE =>
-			
+			    -- DEBUG:
+                dbg_state <= 1;		
+                	
 				read_dataIn_next <= '0'; -- disable read for FIFO
 			
 				-- set control signals
@@ -504,14 +534,25 @@ begin
 							
 				state_next <= STATE_WRITE_WAIT;
 				
-				start_counter_next <= '1'; -- start counter
+				--start_counter_next <= '1'; -- start counter
+                start_counter_write_next <= '1'; -- start counter
 				
-			when STATE_WRITE_WAIT =>				
+			when STATE_WRITE_WAIT =>	
+			    -- DEBUG:
+                dbg_state <= 1;			
+						
 				if cnt_write = '1' then -- wait for 260ns
+				
+				    --start_counter_next <= '0'; -- stop counter
+                    
+                    --start_counter_write_next <= '0'; -- stop counter
+                    				
 					state_next <= STATE_IDLE;
 				end if;
 				
 			when STATE_RAM_READ_FIFO =>
+			    -- DEBUG:
+                dbg_state <= 4;
 			
 			-- FIFOs not empty and full?
 			if (empty_read_add = '0') and (full_read_data = '0') then
@@ -525,6 +566,8 @@ begin
             end if;
                        
 			when STATE_RAM_READ =>
+			    -- DEBUG:
+                dbg_state <= 4;			
 			
 				read_dataOut_add_next <= '0'; -- disable read for FIFO
 				
@@ -538,11 +581,20 @@ begin
 				state_next <= STATE_READ_WAIT;
 				
 				-- start counter
-				start_counter_next <= '1';
+				--start_counter_next <= '1';
+				
+								-- start counter
+                start_counter_read_next <= '1';
 			
 			when STATE_READ_WAIT =>
+			    -- DEBUG:
+                dbg_state <= 4;			
+			
 				if cnt_read = '1' then -- wait for 350ns
-				    start_counter_next <= '0'; -- stop counter
+				    
+				    --start_counter_next <= '0'; -- stop counter
+
+                    --start_counter_read_next <= '0'; -- stop counter
 					
 					-- writes data to FIFO
 				    if ENABLE_16_BIT = 1 then
