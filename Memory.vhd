@@ -322,9 +322,12 @@ begin
 	begin
 		if rising_edge(clk_200MHz) then
 			if r_w = '1' then -- write
+				--Clear Copy
+				address_cpy_read <= (others => 'U');
+				
 				-- FIFO is not full and (address and data) are different?
 				if (full_write_data = '0' and full_write_add = '0' and 
-				   (address_cpy /= address and data_cpy /= data_in)) then
+				   (address_cpy /= address or data_cpy /= data_in)) then
 					write_dataIn <= '1'; -- writes address and data to FIFO
 					-- Copies
 					data_cpy <= data_in;
@@ -332,7 +335,7 @@ begin
 				else
 					write_dataIn <= '0'; -- disable write for FIFO
 				end if;
-			else -- read
+			elsif r_w = '0' then -- read					
 				-- FIFO is not full and address is different?
 				if full_read_add = '0' and address_cpy_read /= address then
 					write_dataOut_add <= '1'; -- writes address to FIFO
@@ -369,32 +372,32 @@ begin
 			if rising_edge(clk_200MHz) then
 				if (start_counter_write = '1') then
 				    if counter_write < COUNTER_MAX_WRITE then
-                        -- Clear signals
-                        cnt_write <= '0'; 
-                    end if;
-                    if counter_write = COUNTER_MAX_WRITE then -- 350ns
-                        cnt_write <= '1'; 
-                        counter_write <= 0;
-                    else
-                        counter_write <= counter_write + 1;
-                        dbg_writecounter <= counter_write+1;
-                    end if;
-                    counter_read <= 0;
-                end if;
+							-- Clear signals
+							cnt_write <= '0'; 
+					  end if;
+					  if counter_write = COUNTER_MAX_WRITE then -- 350ns
+							cnt_write <= '1'; 
+							counter_write <= 0;
+					  else
+							counter_write <= counter_write + 1;
+							dbg_writecounter <= counter_write+1;
+					  end if;
+					  counter_read <= 0;
+				 end if;
                 
 				if (start_counter_read = '1') then
 				    if counter_read < COUNTER_MAX_READ then
-                        -- Clear signals
-                        cnt_read <= '0'; 
-                    end if;
-                    if counter_read = COUNTER_MAX_READ then -- 350ns
-                        cnt_read <= '1'; 
-                        counter_read <= 0;
-                    else
-                        counter_read <= counter_read + 1;
-                        dbg_readcounter <= counter_read+1;
-                    end if;
-                    counter_write <= 0;
+							-- Clear signals
+							cnt_read <= '0'; 
+					  end if;
+					  if counter_read = COUNTER_MAX_READ then -- 350ns
+							cnt_read <= '1'; 
+							counter_read <= 0;
+					  else
+							counter_read <= counter_read + 1;
+							dbg_readcounter <= counter_read+1;
+					  end if;
+					  counter_write <= 0;
 				end if;
 			end if;
 		end if;
