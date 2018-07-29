@@ -51,11 +51,6 @@ architecture beh of top_tb is
 	
 	signal led_w					 : std_logic;
 	signal led_r					 : std_logic;
-	
-    -- Debug Ports:
-	signal dbg_cnt_write               : integer := 0;
-    signal dbg_cnt_read                : integer := 0;
-    signal dbg_state                   : integer := 0;
 
 begin
 
@@ -83,12 +78,7 @@ begin
 			ddr2_dqs_p => ddr2_dqs_p,
 			ddr2_dqs_n => ddr2_dqs_n,
 			led_w => led_w,
-			led_r => led_r,
-			
-            -- Debug Ports:
-            dbg_writecounter => dbg_cnt_write,
-            dbg_readcounter => dbg_cnt_read,
-            dbg_state  => dbg_state
+			led_r => led_r
 		);
 		
 --

@@ -38,12 +38,7 @@ package top_pkg is
 			ddr2_dqs_n           : inout std_logic_vector(1 downto 0);
 			
 			led_w						: out std_logic;
-			led_r						: out std_logic;
-			
-            -- Debug Ports:
-            dbg_writecounter        : out  integer;
-            dbg_readcounter         : out  integer;
-            dbg_state               : out  integer
+			led_r						: out std_logic
 		);
 	end component top;
 	

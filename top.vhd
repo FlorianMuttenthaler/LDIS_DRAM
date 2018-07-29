@@ -42,12 +42,7 @@ entity top is
 		ddr2_dqs_n           : inout std_logic_vector(1 downto 0);
 		
 		led_w						: out std_logic;
-		led_r						: out std_logic;
-		
-        -- Debug Ports:
-        dbg_writecounter        : out  integer;
-        dbg_readcounter         : out  integer;
-        dbg_state               : out  integer
+		led_r						: out std_logic
 	);
 
 end top;
@@ -61,7 +56,7 @@ architecture beh of top is
 	signal address: std_logic_vector(26 downto 0) := "000000000000000000000000001";
 	signal mem_ready: std_logic;
 	signal data_out: std_logic_vector(15 downto 0);
-	signal r_w : std_logic;
+	signal r_w, r_w_next : std_logic;
 	
 	-- Input Dbncr module
 	signal btn_write_en : std_logic := '0';
@@ -106,12 +101,7 @@ begin
 			ddr2_odt        => ddr2_odt,
 			ddr2_dq         => ddr2_dq,
 			ddr2_dqs_p      => ddr2_dqs_p,
-			ddr2_dqs_n      => ddr2_dqs_n,
-			
-            -- Debug Ports:
-            dbg_writecounter => dbg_writecounter,
-            dbg_readcounter => dbg_readcounter,
-            dbg_state => dbg_state
+			ddr2_dqs_n      => ddr2_dqs_n
 	);
 		
 	Dbncr_w : entity work.Dbncr
@@ -145,14 +135,16 @@ begin
 			state <= STATE_IDLE;
 		elsif rising_edge(clk_200MHz) then
 			state <= state_next;
+			r_w <= r_w_next;
 	   end if;
 	end process sync_proc;
 			
-	main_proc: process (state, btn_write_en, btn_read_en)
+	main_proc: process (state, btn_write_en, btn_read_en, r_w)
 	begin
 		-- prevent latches for state machine
 		state_next 	<= state;
-		
+		r_w_next <= r_w;
+				
 		case state is
 			when STATE_IDLE =>
 				if btn_write_en = '1' then
@@ -163,10 +155,10 @@ begin
 				    null; -- for init purpose only
 				end if;
 			when STATE_WRITE =>
-				r_w <= '1';
+				r_w_next <= '1';
 				state_next <= STATE_IDLE; 
 			when STATE_READ =>
-				r_w <= '0';
+				r_w_next <= '0';
 				state_next <= STATE_IDLE; 
 			when others =>
 				state_next <= STATE_IDLE; 

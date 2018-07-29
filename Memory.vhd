@@ -49,12 +49,7 @@ entity memory is
         ddr2_odt             : out   std_logic_vector(0 downto 0);
         ddr2_dq              : inout std_logic_vector(15 downto 0);
         ddr2_dqs_p           : inout std_logic_vector(1 downto 0);
-        ddr2_dqs_n           : inout std_logic_vector(1 downto 0);
-        
-        -- Debug Ports:
-        dbg_writecounter    : out  integer;
-        dbg_readcounter     : out  integer;
-        dbg_state           : out  integer
+        ddr2_dqs_n           : inout std_logic_vector(1 downto 0)
 );
 
 end memory;
@@ -177,13 +172,13 @@ architecture beh of memory is
 	
 	-- States:
 	type type_state is (
-		STATE_IDLE,               --0
-		STATE_RAM_WRITE_FIFO,     --1
-		STATE_RAM_WRITE,          --1
-		STATE_WRITE_WAIT,         --1
-		STATE_RAM_READ_FIFO,      --4
-		STATE_RAM_READ,           --4
-		STATE_READ_WAIT           --4
+		STATE_IDLE,               
+		STATE_RAM_WRITE_FIFO,     
+		STATE_RAM_WRITE,          
+		STATE_WRITE_WAIT,         
+		STATE_RAM_READ_FIFO,      
+		STATE_RAM_READ,           
+		STATE_READ_WAIT           
 	);
 
 	signal state, state_next 			: type_state := STATE_IDLE;
@@ -380,7 +375,6 @@ begin
 							counter_write <= 0;
 					  else
 							counter_write <= counter_write + 1;
-							dbg_writecounter <= counter_write+1;
 					  end if;
 					  counter_read <= 0;
 				 end if;
@@ -395,7 +389,6 @@ begin
 							counter_read <= 0;
 					  else
 							counter_read <= counter_read + 1;
-							dbg_readcounter <= counter_read+1;
 					  end if;
 					  counter_write <= 0;
 				end if;
@@ -480,10 +473,7 @@ begin
 		
 		case state is
 		
-			when STATE_IDLE =>
-			    -- DEBUG:
-			    --dbg_state <= 0;
-			    
+			when STATE_IDLE =>			    
 				start_counter_write_next <= '0'; -- stop counter
 				start_counter_read_next <= '0'; -- stop counter
 				
@@ -502,10 +492,7 @@ begin
 				    null; -- for init purpose only
 				end if;
 				
-			when STATE_RAM_WRITE_FIFO =>
-			    -- DEBUG:
-                dbg_state <= 1;			
-			
+			when STATE_RAM_WRITE_FIFO =>			
 				-- FIFOs not empty?
 			    if empty_write_data = '0' and empty_write_add = '0' then
                     read_dataIn_next <= '1'; -- reads address and data from FIFO
@@ -515,10 +502,7 @@ begin
                     state_next <= STATE_IDLE; 
                 end if;
                 
-			when STATE_RAM_WRITE =>
-			    -- DEBUG:
-                dbg_state <= 1;		
-                	
+			when STATE_RAM_WRITE =>                	
 				read_dataIn_next <= '0'; -- disable read for FIFO
 			
 				-- set control signals
@@ -540,10 +524,7 @@ begin
 				--start_counter_next <= '1'; -- start counter
                 start_counter_write_next <= '1'; -- start counter
 				
-			when STATE_WRITE_WAIT =>	
-			    -- DEBUG:
-                dbg_state <= 1;			
-						
+			when STATE_WRITE_WAIT =>							
 				if cnt_write = '1' then -- wait for 260ns
 				
 				    --start_counter_next <= '0'; -- stop counter
@@ -553,10 +534,7 @@ begin
 					state_next <= STATE_IDLE;
 				end if;
 				
-			when STATE_RAM_READ_FIFO =>
-			    -- DEBUG:
-                dbg_state <= 4;
-			
+			when STATE_RAM_READ_FIFO =>			
 			-- FIFOs not empty and full?
 			if (empty_read_add = '0') and (full_read_data = '0') then
                 read_dataOut_add_next <= '1'; -- reads address from FIFO
@@ -568,10 +546,7 @@ begin
                 state_next <= STATE_IDLE;
             end if;
                        
-			when STATE_RAM_READ =>
-			    -- DEBUG:
-                dbg_state <= 4;			
-			
+			when STATE_RAM_READ =>			
 				read_dataOut_add_next <= '0'; -- disable read for FIFO
 				
 				-- set control signals
@@ -590,9 +565,6 @@ begin
                 start_counter_read_next <= '1';
 			
 			when STATE_READ_WAIT =>
-			    -- DEBUG:
-                dbg_state <= 4;			
-			
 				if cnt_read = '1' then -- wait for 350ns
 				    
 				    --start_counter_next <= '0'; -- stop counter
