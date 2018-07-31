@@ -51,7 +51,7 @@ end top;
 --
 architecture beh of top is
 
-	constant NR_OF_CLKS : integer := 1;
+	constant NR_OF_CLKS : integer := 1000;
 	
 	signal address: std_logic_vector(26 downto 0) := "000000000000000000000000001";
 	signal mem_ready: std_logic;
